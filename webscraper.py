@@ -63,24 +63,26 @@ def FormatToCSV(data,diningCommon):
     
     
 
-async def main():
-    for (diningCommon, diningURL) in Dining_commons:
-        print(diningCommon + '\n')
-        req = requests.get(diningURL)
-        soup = BeautifulSoup(req.content,"html.parser")
+# async def main():
+for (diningCommon, diningURL) in Dining_commons:
+    print(diningCommon + '\n')
+    req = requests.get(diningURL)
+    soup = BeautifulSoup(req.content,"html.parser")
 
-        # this loops through all the individual components
-        for menu_tag in Menu_class_tags:
-            menu_container= soup.find('div', {"class": menu_tag, "id":"content_text"})
-            if menu_container != None:
-                stations = menu_container.findAll('h2',{'class':'menu_category_name'})
-                for station in stations:
-                    # print(station.text + '\n')
+    # this loops through all the individual components
+    for menu_tag in Menu_class_tags:
+        menu_container= soup.find('div', {"class": menu_tag, "id":"content_text"})
+        if menu_container != None:
+            stations = menu_container.findAll('h2',{'class':'menu_category_name'})
+            for station in stations:
+                # print(station.text + '\n')
                     curr_element = station.find_next_sibling()
                     while curr_element not in stations and curr_element != None:
                         food_item = curr_element.find("a")
                         data =FormattingFoodMetaData(menu_tag=menu_tag, station=station, food_item=food_item, diningCommon=diningCommon)
-                        response = await SUPABASE.table(TABLE_NAME).insert(data.values()).execute()
+                        data_values = list(data.values())
+                        response = SUPABASE.table(TABLE_NAME).insert(data_values).execute()
+                        print(response)
                         if response.status_code == 201:
                             print("success")
                             curr_element = curr_element.next_sibling
@@ -88,4 +90,4 @@ async def main():
                             print(f"Error: {response.text}")
                         # FormatToCSV(data,diningCommon)
 
-asyncio.run(main())
+# asyncio.run(main())
