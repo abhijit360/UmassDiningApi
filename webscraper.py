@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-import datetime, csv, os, asyncio, json
+import datetime, csv, os, json
 from dotenv import load_dotenv
 from supabase_py import create_client
 
@@ -29,13 +29,17 @@ def FormattingFoodMetaData(menu_tag, station, food_item, diningCommon):
         "meal_time": meal_time,
         'station': station.text,
         "date": today,
-        "dinning_common": diningCommon
+        "dining_common": diningCommon
     }
     for attribute in food_attributes:
         meta_data = food_item.get(attribute)
-        meta_data_tag = attribute.split('data-')[1]
+        meta_data_tag = attribute.split('data-')[1].replace("-","_")
         if(meta_data != None):
             formatted_data[meta_data_tag] = meta_data.strip()
+    
+    for (key, value) in formatted_data.items():
+        if value == "" or value == '':
+            formatted_data[key] = None
 
     return formatted_data
 
@@ -61,9 +65,9 @@ def FormatToCSV(data,diningCommon):
             writer.writeheader()
         writer.writerow(data)
     
-    
 
-# async def main():
+input_data = []    
+
 for (diningCommon, diningURL) in Dining_commons:
     print(diningCommon + '\n')
     req = requests.get(diningURL)
@@ -80,14 +84,17 @@ for (diningCommon, diningURL) in Dining_commons:
                     while curr_element not in stations and curr_element != None:
                         food_item = curr_element.find("a")
                         data =FormattingFoodMetaData(menu_tag=menu_tag, station=station, food_item=food_item, diningCommon=diningCommon)
+                        # input_data.append(data)
+                        # print(input_data[0])
+                        # curr_element = curr_element.next_sibling
                         data_values = list(data.values())
-                        response = SUPABASE.table(TABLE_NAME).insert(data_values).execute()
-                        print(response)
-                        if response.status_code == 201:
+                        response = SUPABASE.table(TABLE_NAME).insert(data).execute()
+                        # print(response)
+                        if response["status_code"] == 201:
                             print("success")
                             curr_element = curr_element.next_sibling
                         else:
                             print(f"Error: {response.text}")
                         # FormatToCSV(data,diningCommon)
 
-# asyncio.run(main())
+
