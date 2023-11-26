@@ -1,3 +1,7 @@
 venv
 data
 .env
+dist
+buil
+webscraper.spec
+build

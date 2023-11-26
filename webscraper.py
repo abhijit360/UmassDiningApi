@@ -91,7 +91,7 @@ for (diningCommon, diningURL) in Dining_commons:
                         response = SUPABASE.table(TABLE_NAME).insert(data).execute()
                         # print(response)
                         if response["status_code"] == 201:
-                            print("success")
+                            # print("success")
                             curr_element = curr_element.next_sibling
                         else:
                             print(f"Error: {response.text}")
